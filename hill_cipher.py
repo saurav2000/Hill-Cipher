@@ -29,7 +29,7 @@ def main():
 	# Reading k and key and text and checking key's length
 	k = int(lines[0][:-1])
 	key_line = lines[1][:-1].strip().split(" ")
-	text = lines[2][:-1].strip().replace(" ","")
+	text = str(''.join([x for x in lines[2][:-1].strip() if 97<=ord(x)<=122]))
 	if(len(key_line)!=k*k):
 		print("Key size improper")
 		return
