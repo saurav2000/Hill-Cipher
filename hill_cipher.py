@@ -46,7 +46,7 @@ def main():
 	text_ascii = sp.Matrix([ord(a)-97 for a in text])
 	res_text = cryption(text_ascii, key if int(sys.argv[2])==0 else key_inv, k) 
 	final_text = str(''.join(chr(i) for i in res_text))
-	file = open("result.txt", "w")
+	file = open(sys.argv[3], "w")
 	print(final_text, file=file)
 	file.close()
 
