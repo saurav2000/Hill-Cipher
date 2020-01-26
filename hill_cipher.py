@@ -8,6 +8,7 @@ def euclid(a, b):
 	return (g, y - ((b//a) * x), x)
 
 def inverse(a, m):
+	a = (a%m + m)%m
 	(g, x, y) = euclid(a, m)
 	if(g!=1):
 		return -1
@@ -29,7 +30,8 @@ def main():
 	# Reading k and key and text and checking key's length
 	k = int(lines[0][:-1])
 	key_line = lines[1][:-1].strip().split(" ")
-	text = str(''.join([x for x in lines[2][:-1].strip() if 97<=ord(x)<=122]))
+	text_lines = ''.join([x[:-1] for x in lines[2:]])
+	text = ''.join([x for x in text_lines.strip() if 97<=ord(x)<=122])
 	if(len(key_line)!=k*k):
 		print("Key size improper")
 		return
