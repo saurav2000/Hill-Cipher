@@ -19,10 +19,10 @@ def cryption(text, key, k):
 	for i in range(0, len(text), k):
 		res = ((key * sp.Matrix(text[i:i+k])) % 26)
 		l+= [x+97 for x in res]
-	return list(l)
+	return str(''.join(chr(i) for i in l))
 
 def textToMatrix(text_list):
-	return sp.Matrix([[ord(x)-97 for x in s] for s in text_list])
+	return sp.Matrix([[ord(x)-97 for x in s] for s in text_list]).T
 
 def cryptionMain():
 	# Reading lines
@@ -33,7 +33,7 @@ def cryptionMain():
 	# Reading k and key and text and checking key's length
 	k = int(lines[0][:-1])
 	key_line = lines[1][:-1].strip().split(" ")
-	text_lines = ''.join([x[:-1] for x in lines[2:]])
+	text_lines = ''.join([x[:-1] if x[-1]=='\n' else x for x in lines[2:]])
 	text = ''.join([x for x in text_lines.strip() if 97<=ord(x)<=122])
 	if(len(key_line)!=k*k):
 		print("Key size improper")
@@ -53,8 +53,7 @@ def cryptionMain():
 	text_ascii = sp.Matrix([ord(a)-97 for a in text])
 
 	#Computing final result and printing to file
-	res_text = cryption(text_ascii, key if int(sys.argv[2])==0 else key_inv, k) 
-	final_text = str(''.join(chr(i) for i in res_text))
+	final_text = cryption(text_ascii, key if int(sys.argv[2])==0 else key_inv, k)
 	file = open(sys.argv[3], "w")
 	print(final_text, file=file)
 	file.close()
@@ -63,6 +62,7 @@ def cryptanalysis():
 	# Reading text
 	file = open(sys.argv[1])
 	cipher_text = file.read()[:-1]
+	cipher_text_mat = sp.Matrix([ord(a)-97 for a in cipher_text]) 
 	file.close()
 	frequency_map = {}
 	for i in range(0, len(cipher_text), 2):
@@ -72,16 +72,23 @@ def cryptanalysis():
 		else:
 			frequency_map[sub]=1
 
-	top_freq = sorted(frequency_map, key = frequency_map.get, reverse=True)[:4]
+	top_freq = sorted(frequency_map, key = frequency_map.get, reverse=True)[:6]
 	top_eng_digraphs = ['th', 'he']
-
 	eng_text_inverse = textToMatrix(top_eng_digraphs).inv_mod(26)
-
-	for i in range(4):
-		for j in range(4):
+	file = open(sys.argv[3], "w")
+	for i in range(6):
+		for j in range(6):
 			if i==j:
-				continue;
+				continue
 			key = (textToMatrix([top_freq[i], top_freq[j]]) * eng_text_inverse) % 26
+			try:
+				key_inv = key.inv_mod(26)
+			except:
+				continue
+			else:
+				final_text = cryption(cipher_text_mat, key_inv, 2)
+				print(list(key), file=file)
+				print(final_text, file=file, end='\n\n')
 
 def main():
 	if(int(sys.argv[2])==2):
