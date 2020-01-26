@@ -1,5 +1,6 @@
 import sys
 import sympy as sp
+import itertools as it
 
 def euclid(a, b):
 	if(a==0):
@@ -61,34 +62,39 @@ def cryptionMain():
 def cryptanalysis():
 	# Reading text
 	file = open(sys.argv[1])
+	output_file = open(sys.argv[3], "w")
+	k = int(file.readline())
 	cipher_text = file.read()[:-1]
+	if(len(cipher_text)%k!=0):
+		if(len(cipher_text)%2!=0):
+			print("Given key size {} and 2 not working. Exiting".format(k))
+		else:
+			k = 2
 	cipher_text_mat = sp.Matrix([ord(a)-97 for a in cipher_text]) 
 	file.close()
 	frequency_map = {}
-	for i in range(0, len(cipher_text), 2):
-		sub = cipher_text[i:i+2]
+	for i in range(0, len(cipher_text), k):
+		sub = cipher_text[i:i+k]
 		if sub in frequency_map:
 			frequency_map[sub]+=1
 		else:
 			frequency_map[sub]=1
 
-	top_freq = sorted(frequency_map, key = frequency_map.get, reverse=True)[:6]
-	top_eng_digraphs = ['th', 'he']
-	eng_text_inverse = textToMatrix(top_eng_digraphs).inv_mod(26)
-	file = open(sys.argv[3], "w")
-	for i in range(6):
-		for j in range(6):
-			if i==j:
-				continue
-			key = (textToMatrix([top_freq[i], top_freq[j]]) * eng_text_inverse) % 26
+	top_freq = sorted(frequency_map, key = frequency_map.get, reverse=True)[:25]
+	top_eng_ngrams = [[], [], ['th', 'he'], ['the', 'and', 'ing']]
+	eng_text_inverse = textToMatrix(top_eng_ngrams[k]).inv_mod(26)
+	permutations = list(it.permutations(top_freq, k))
+	for perm in permutations:
+			key = (textToMatrix(list(perm)) * eng_text_inverse) % 26
 			try:
 				key_inv = key.inv_mod(26)
 			except:
 				continue
 			else:
-				final_text = cryption(cipher_text_mat, key_inv, 2)
-				print(list(key), file=file)
-				print(final_text, file=file, end='\n\n')
+				final_text = cryption(cipher_text_mat, key_inv, k)
+				print(list(key), file=output_file)
+				print(final_text, file=output_file, end='\n\n')
+	output_file.close()
 
 def main():
 	if(int(sys.argv[2])==2):
