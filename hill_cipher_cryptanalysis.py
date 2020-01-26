@@ -1,9 +1,11 @@
 import sys
 import sympy as sp
 
+def textToMatrix(text_list):
+	return sp.Matrix([[ord(x)-97 for x in s] for s in text_list]) 
+
 def inverse(text_list):
-	key = sp.Matrix([[ord(x)-97 for x in s] for s in text_list])
-	return key.inv_mod(26)
+	return textToMatrix(text_list).inv_mod(26)
 
 def main():
 	# Reading text
@@ -18,9 +20,17 @@ def main():
 		else:
 			frequency_map[sub]=1
 
-	most_freq = max(frequency_map, key = frequency_map.get)
-	del frequency_map[most_freq]
-	secmost_freq = max(frequency_map, key = frequency_map.get)
+	top_freq = sorted(frequency_map, key = frequency_map.get, reverse=True)[:4]
+	top_eng_digraphs = ['th', 'he']
+
+	eng_text_inverse = inverse(top_eng_digraphs)
+
+	for i in range(4):
+		for j in range(4):
+			if i==j:
+				continue;
+			key = (textToMatrix([top_freq[i], top_freq[j]]) * eng_text_inverse) % 26
+			
 
 
 
